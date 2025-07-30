@@ -1,64 +1,88 @@
 import supabase from "./supabase-client";
 import { useEffect, useState } from "react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+} from "recharts";
 
 export default function Dashboard() {
-    const [metrics,setMetrics] = useState([]);
+  const [metrics, setMetrics] = useState([]);
+
+  useEffect(() => {
+    fetchMetrics();
+
+    const channel = supabase
+      .channel("deal-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "sales_deals",
+        },
+        (payload) => {
+          fetchMetrics();
+        }
+      )
+      .subscribe();
+
+    // Clean up subscription
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
 
-    useEffect(()=>{
-        fetchMetrics();
-    }, [])
-
-    async function fetchMetrics() {
-        try{
-            const { data, error }= await supabase
-                .from('sales_deals')
-                .select(
-                    `
+  async function fetchMetrics() {
+    try {
+      const { data, error } = await supabase.from("sales_deals").select(
+        `
                     name,
                     value.sum()
-                    `,
-                )
-            if(error){
-                throw error;
-            }
+                    `
+      );
+      if (error) {
+        throw error;
+      }
 
-            console.log(data);
-            setMetrics(data);
-        }
-        catch(error){
-            console.error("error in fetching metrics", error);
-        }
-        
+      console.log(data);
+      setMetrics(data);
+    } catch (error) {
+      console.error("error in fetching metrics", error);
     }
+  }
 
-    function y_max(){
-        if(metrics.length>0){
-            const maxSum = Math.max(...metrics.map((m) => m.sum || 0));
-            return maxSum+2000;
-        }
-        return 5000;
+  function y_max() {
+    if (metrics.length > 0) {
+      const maxSum = Math.max(...metrics.map((m) => m.sum || 0));
+      return maxSum + 2000;
     }
+    return 5000;
+  }
 
-    return (
-        <div>
-            <h1>Sales Dashboard</h1>
-            <h3>Total Sales This Quarter ($)</h3>
-            <div style={{ flex: 1, width: '100%', height: '300px' }}>
-                <ResponsiveContainer>
-                    <BarChart data={metrics} margin={{ top: 5, right: 30, left: 20, bottom: 5, }}>
-                        <XAxis dataKey="name" />
-                        <YAxis domain={[0, y_max()]} />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="sum" fill="#58d675" name="Total Sales" />
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
-        </div>
-    );
+  return (
+    <div>
+      <h1>Sales Dashboard</h1>
+      <h3>Total Sales This Quarter ($)</h3>
+      <div style={{ flex: 1, width: "100%", height: "300px" }}>
+        <ResponsiveContainer>
+          <BarChart
+            data={metrics}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          >
+            <XAxis dataKey="name" />
+            <YAxis domain={[0, y_max()]} />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="sum" fill="#58d675" name="Total Sales" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
 }
-
-
