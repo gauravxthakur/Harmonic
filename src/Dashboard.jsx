@@ -9,6 +9,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import Form from "./form";
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState([]);
@@ -83,6 +84,10 @@ export default function Dashboard() {
           </BarChart>
         </ResponsiveContainer>
       </div>
+
+
+      <Form metrics={metrics} />
+      
     </div>
   );
 }
