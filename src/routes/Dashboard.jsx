@@ -1,4 +1,4 @@
-import supabase from "./supabase-client";
+import supabase from "../supabase-client";
 import { useEffect, useState } from "react";
 import {
   ResponsiveContainer,
@@ -9,7 +9,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import Form from "./form";
+import Form from "../components/form";
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState([]);
@@ -87,7 +87,7 @@ export default function Dashboard() {
 
 
       <Form metrics={metrics} />
-      
+
     </div>
   );
 }
