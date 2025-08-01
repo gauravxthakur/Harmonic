@@ -26,24 +26,14 @@ export const AuthContextProvider = ({children}) =>{
         }
 
         getInitialSession();
-        /**
-      Challenge:
-      * 1) Inside the useEffect, write an asynchronous 'getInitialSession' function 
-           which executes the 'auth.getSession()' method from the Supabase client 
-           library
-      * 2) Destructure the response into 'data' and 'error' variables
-      * 3) Using the try/catch syntax, handle both Supabase-specific errors and 
-           unexpected errors
-      * 4) If successful, log the value of the 'session' property of the 'data' 
-           object to the console and then use it to update the 'session' state 
-      * 5) Call the new function below the function definition
-      * 6) Check your browser's dev tools for 'null' being logged
-           Hint: follow the same error handling pattern as the 'fetchMetrics' function
-      **/
       
         //2) Listen for changes in auth state
+        supabase.auth.onAuthStateChange = (_event, session) =>{
+            setSession(session);
+            console.log("Session changed:", session);
+        }
       
-        }, []);
+    }, []);
 
 //Auth functions (signin, signup, logout)
 
@@ -60,5 +50,5 @@ export const AuthContextProvider = ({children}) =>{
 
 export const useAuth = () =>{
     return useContext(AuthContext);
-}
+} 
 
