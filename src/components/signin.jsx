@@ -1,15 +1,35 @@
-import { useActionState } from "react";
+import { useActionState } from 'react';
 
-export default function Signin() {
-  const {error, submitAction, isPending} = useActionState(
-    async (previousState, formData) =>{
-      //1. Extract form data
-      const email = formData.get("email");
-      const password = formData.get("password");
+const Signin = () => {
+  const [error, submitAction, isPending] = useActionState(
+    async (previousState, formData) => {
+      const email = formData.get('email');
+      const password = formData.get('password');
 
-      //2. Call our sign-in function
-    }, 
-    null
+      try {
+        //2. Call our sign-in function
+        const { success, data, error: signInError } = await signIn(email, password);
+
+        //3. Handle known errors 
+        if (signInError) {
+          return new Error(signInError);
+        }
+
+        //4. Handle success
+        if (success && data?.session) {
+          //Navigate to /dashboard
+          return null;
+        }
+
+        //5. Handle any other cases (safety net)
+        return null;
+      } catch (error) {
+
+        //6. Handle unexpected errors (return error)
+        console.error('Sign in error: ', error.message);
+        return new Error('An unexpected error occurred. Please try again.');
+      }
+    }, null
   );
 
   return (
@@ -17,7 +37,7 @@ export default function Signin() {
       <h1 className="landing-header">Harmonic</h1>
       <div className="sign-form-container">
         <form
-          action = {submitAction}
+          action={submitAction}
           aria-label="Sign in form"
           aria-describedby="form-description"
         >
@@ -28,7 +48,8 @@ export default function Signin() {
 
           <h2 className="form-title">Sign in</h2>
           <p>
-            Don't have an account yet? {/*<Link className="form-link">*/}
+            Don't have an account yet?{' '}
+            {/*<Link className="form-link">*/}
             Sign up
             {/*</Link>*/}
           </p>
@@ -42,9 +63,9 @@ export default function Signin() {
             placeholder=""
             required
             aria-required="true"
-            //aria-invalid=
-            //aria-describedby=
-            //disabled=
+            aria-invalid={error ? 'true' : 'false'}
+            aria-describedby={error ? 'signin-error' : undefined}
+            disabled={isPending}
           />
 
           <label htmlFor="password">Password</label>
@@ -56,24 +77,32 @@ export default function Signin() {
             placeholder=""
             required
             aria-required="true"
-            //aria-invalid=
-            //aria-describedby=
-            //disabled=
+            aria-invalid={error ? 'true' : 'false'}
+            aria-describedby={error ? 'signin-error' : undefined}
+            disabled={isPending}
           />
 
           <button
             type="submit"
             className="form-button"
-            //className=
-            //aria-busy=
+            aria-busy={isPending}
           >
-            Sign In
-            {/*'Signing in...' when pending*/}
+            {isPending ? 'Signing in' : 'Sign In'}
           </button>
 
-          {/* Error message */}
+          {error && (
+            <div
+              id="signin-error"
+              role="alert"
+              className="sign-form-error-message"
+            >
+              {error.message}
+            </div>
+          )}
         </form>
       </div>
     </>
   );
-}
+};
+
+export default Signin;
