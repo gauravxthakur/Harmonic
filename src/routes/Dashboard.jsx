@@ -38,7 +38,6 @@ export default function Dashboard() {
     };
   }, []);
 
-
   async function fetchMetrics() {
     try {
       const { data, error } = await supabase.from("sales_deals").select(
@@ -67,27 +66,30 @@ export default function Dashboard() {
   }
 
   return (
-    <div>
-      <h1>Sales Dashboard</h1>
-      <h3>Total Sales This Quarter ($)</h3>
-      <div style={{ flex: 1, width: "100%", height: "300px" }}>
-        <ResponsiveContainer>
-          <BarChart
-            data={metrics}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          >
-            <XAxis dataKey="name" />
-            <YAxis domain={[0, y_max()]} />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="sum" fill="#58d675" name="Total Sales" />
-          </BarChart>
-        </ResponsiveContainer>
+    <div
+      className="dashboard-wrapper"
+      role="region"
+      aria-label="Sales dashboard"
+    >
+      <div className="chart-container" role="region" aria-label="Sales chart and data">
+        <h3>Total Sales This Quarter ($)</h3>
+        <div style={{ flex: 1, width: "100%", height: "300px" }}>
+          <ResponsiveContainer>
+            <BarChart
+              data={metrics}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <XAxis dataKey="name" />
+              <YAxis domain={[0, y_max()]} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="sum" fill="#58d675" name="Total Sales" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <Form metrics={metrics} />
       </div>
-
-
-      <Form metrics={metrics} />
-
     </div>
   );
 }
