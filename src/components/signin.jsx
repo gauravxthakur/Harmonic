@@ -1,35 +1,32 @@
-import { useActionState } from 'react';
+import { useActionState } from "react";
+import {useAuth} from "../context/AuthContext";
 
 const Signin = () => {
+  const {signInUser} = useAuth();
+
   const [error, submitAction, isPending] = useActionState(
     async (previousState, formData) => {
-      const email = formData.get('email');
-      const password = formData.get('password');
+      const email = formData.get("email");
+      const password = formData.get("password");
 
-      try {
-        //2. Call our sign-in function
-        const { success, data, error: signInError } = await signIn(email, password);
+      const { success, data, error: signInError } = await signInUser(email, password);
 
-        //3. Handle known errors 
-        if (signInError) {
-          return new Error(signInError);
-        }
 
-        //4. Handle success
-        if (success && data?.session) {
-          //Navigate to /dashboard
-          return null;
-        }
-
-        //5. Handle any other cases (safety net)
-        return null;
-      } catch (error) {
-
-        //6. Handle unexpected errors (return error)
-        console.error('Sign in error: ', error.message);
-        return new Error('An unexpected error occurred. Please try again.');
+      //3. Handle known errors
+      if (signInError) {
+        return new Error(signInError);
       }
-    }, null
+
+      //4. Handle success
+      if (success && data?.session) {
+        //Navigate to /dashboard
+        return null;
+      }
+
+      //5. Handle any other cases (safety net)
+      return null;
+    },
+    null
   );
 
   return (
@@ -48,8 +45,7 @@ const Signin = () => {
 
           <h2 className="form-title">Sign in</h2>
           <p>
-            Don't have an account yet?{' '}
-            {/*<Link className="form-link">*/}
+            Don't have an account yet? {/*<Link className="form-link">*/}
             Sign up
             {/*</Link>*/}
           </p>
@@ -63,8 +59,8 @@ const Signin = () => {
             placeholder=""
             required
             aria-required="true"
-            aria-invalid={error ? 'true' : 'false'}
-            aria-describedby={error ? 'signin-error' : undefined}
+            aria-invalid={error ? "true" : "false"}
+            aria-describedby={error ? "signin-error" : undefined}
             disabled={isPending}
           />
 
@@ -77,17 +73,13 @@ const Signin = () => {
             placeholder=""
             required
             aria-required="true"
-            aria-invalid={error ? 'true' : 'false'}
-            aria-describedby={error ? 'signin-error' : undefined}
+            aria-invalid={error ? "true" : "false"}
+            aria-describedby={error ? "signin-error" : undefined}
             disabled={isPending}
           />
 
-          <button
-            type="submit"
-            className="form-button"
-            aria-busy={isPending}
-          >
-            {isPending ? 'Signing in' : 'Sign In'}
+          <button type="submit" className="form-button" aria-busy={isPending}>
+            {isPending ? "Signing in" : "Sign In"}
           </button>
 
           {error && (
