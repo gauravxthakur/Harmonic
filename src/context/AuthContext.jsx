@@ -1,40 +1,26 @@
 import { createContext, useState, useContext, useEffect } from "react";
 import supabase from "../supabase-client";
-import { SupabaseAuthClient } from "@supabase/supabase-js/dist/module/lib/SupabaseAuthClient";
-import { SupabaseClient } from "@supabase/supabase-js";
 
 const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
-  //Session state (user info, sign-in status)
   const [session, setSession] = useState(undefined);
   const [users, setUsers] = useState([]);
 
+  // Use the standard onAuthStateChange listener to handle session state
+  // It automatically gets the initial session on page load and all subsequent changes
   useEffect(() => {
-    //1) Check on 1st render for a session (getSession())
-
-    async function getInitialSession() {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) {
-          throw error;
-        }
-        // success
-        console.log(data.session);
-        setSession(data.session);
-      } catch (error) {
-        console.error("Error getting session:", error.message);
-      }
-    }
-
-    getInitialSession();
-
-    //2) Listen for changes in auth state
-    supabase.auth.onAuthStateChange = (_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth State Changed! Event:", event, "Session:", session);
       setSession(session);
-      console.log("Session changed:", session);
-    };
+    });
 
+    // Clean up the subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -57,9 +43,6 @@ export const AuthContextProvider = ({ children }) => {
     fetchUsers();
   }, [session]);
 
-  //Auth functions (signin, signup, logout)
-
-  //Sign in (success, data, error)
   const signInUser = async (email, password) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -70,9 +53,8 @@ export const AuthContextProvider = ({ children }) => {
         console.error("Supabase sign-in error:", error.message);
         return { success: false, error: error.message };
       }
-
-      return { success: true, data };
       console.log("Supabase sign in success:", data);
+      return { success: true, data };
     } catch (error) {
       console.error("Unexpected error during sign-in", error.message);
       return {
@@ -82,8 +64,7 @@ export const AuthContextProvider = ({ children }) => {
     }
   };
 
-  // Sign out
-  const signOut = async (email, password) => {
+  const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
@@ -101,7 +82,6 @@ export const AuthContextProvider = ({ children }) => {
     }
   };
 
-  //Sign up
   const signUpNewUser = async (email, password, name, accountType) => {
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -118,11 +98,8 @@ export const AuthContextProvider = ({ children }) => {
         console.error("Supabase sign-up error:", error.message);
         return { success: false, error: error.message };
       }
-
-      
+      console.log("Supabase sign-up success:", data);
       return { success: true, data };
-      console.log("Supabase sign-up success:", data); //here here here
-      
     } catch (error) {
       console.error("Unexpected error during sign-up", error.message);
       return {

@@ -1,9 +1,9 @@
 import { useActionState } from "react";
-import {useAuth} from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
 const Signin = () => {
-  const {signInUser} = useAuth();
+  const { signInUser } = useAuth();
   const navigate = useNavigate();
 
   const [error, submitAction, isPending] = useActionState(
@@ -11,21 +11,19 @@ const Signin = () => {
       const email = formData.get("email");
       const password = formData.get("password");
 
-      const { success, data, error: signInError } = await signInUser(email, password);
+      const {
+        success,
+        data,
+        error: signInError,
+      } = await signInUser(email, password);
 
-
-      //3. Handle known errors
       if (signInError) {
         return new Error(signInError);
       }
 
-      //4. Handle success
-      if (success && data?.session) {
-        navigate("/dashboard");
-        return null;
-      }
-
-      //5. Handle any other cases (safety net)
+      // Do not navigate here.
+      // A successful sign-in will trigger the onAuthStateChange listener in AuthContext.
+      // That will update the session state, and your router will handle the redirect automatically.
       return null;
     },
     null
@@ -47,7 +45,7 @@ const Signin = () => {
 
           <h2 className="form-title">Sign in</h2>
           <p>
-            Don't have an account yet? {' '}
+            Don't have an account yet?{" "}
             <Link className="form-link" to="/signup">
               Sign up
             </Link>

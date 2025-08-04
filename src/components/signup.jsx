@@ -23,10 +23,10 @@ const Signup = () => {
       if (signUpError) {
         return new Error(signUpError);
       }
-      if (success && data?.session) {
-        navigate("/dashboard");
-        return null;
-      }
+
+      // Do not navigate here.
+      // A successful sign-up will trigger the onAuthStateChange listener in AuthContext.
+      // That will update the session state, and your router will handle the redirect automatically.
       return null;
     },
     null
