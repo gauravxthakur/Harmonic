@@ -2,18 +2,8 @@ import { useActionState } from "react";
 import supabase from "../supabase-client";
 import { useAuth } from "../context/AuthContext";
 
-/**
-Challenge:
-* 1) Delete all of the records with the old, 'name' and 'value', format in the 
-     'sales_deals' table
-* 2) Add new deals with the new, 'user_id' and 'value', format by logging in and 
-     using the form. Verify the deals are being saved via your Supabase project
-* 3) Test that users with account type 'rep' can only add deals for their own 
-     name
-*/
-
-function Form({ metrics }) {
-  const { users } = useAuth();
+function Form() {
+  const { users, session } = useAuth();
 
   const [error, submitAction, isPending] = useActionState(
     async (previousState, formData) => {
@@ -36,12 +26,16 @@ function Form({ metrics }) {
     null
   );
 
+  const currentUser = users.find((user) => user.id === session?.user?.id);
+
   const generateOptions = () => {
-    return users.map((user) => (
-      <option key={user.id} value={user.name}>
-        {user.name}
-      </option>
-    ));
+    return users
+      .filter((user) => user.account_type === "rep")
+      .map((user) => (
+        <option key={user.id} value={user.name}>
+          {user.name}
+        </option>
+      ));
   };
 
   return (
@@ -56,19 +50,35 @@ function Form({ metrics }) {
           the amount.
         </div>
 
-        <label htmlFor="deal-name">
-          Name:
-          <select
-            id="deal-name"
-            name="name"
-            defaultValue={metrics?.[0]?.name || ""}
-            aria-required="true"
-            aria-invalid={error ? "true" : "false"}
-            disabled={isPending}
-          >
-            {generateOptions()}
-          </select>
-        </label>
+        {currentUser?.account_type === "rep" ? (
+          <label htmlFor="deal-name">
+            Name:
+            <input
+              id="deal-name"
+              type="text"
+              name="name"
+              value={currentUser?.name || ""}
+              readOnly
+              className="rep-name-input"
+              aria-label="Sales representative name"
+              aria-readonly="true"
+            />
+          </label>
+        ) : (
+          <label htmlFor="deal-name">
+            Name:
+            <select
+              id="deal-name"
+              name="name"
+              defaultValue={users[0]?.name || ""}
+              aria-required="true"
+              aria-invalid={error ? "true" : "false"}
+              disabled={isPending}
+            >
+              {generateOptions()}
+            </select>
+          </label>
+        )}
 
         <label htmlFor="deal-value">
           Amount: $

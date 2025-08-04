@@ -119,8 +119,10 @@ export const AuthContextProvider = ({ children }) => {
         return { success: false, error: error.message };
       }
 
+      
       return { success: true, data };
-      console.log("Supabase sign-up success:", data);
+      console.log("Supabase sign-up success:", data); //here here here
+      
     } catch (error) {
       console.error("Unexpected error during sign-up", error.message);
       return {

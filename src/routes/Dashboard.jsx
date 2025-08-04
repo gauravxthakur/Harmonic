@@ -40,12 +40,14 @@ export default function Dashboard() {
 
   async function fetchMetrics() {
     try {
-      const { data, error } = await supabase.from("sales_deals").select(
+      const { data, error } = await supabase.from('sales_deals').select(
         `
-                    name,
-                    value.sum()
-                    `
-      );
+        value.sum(),
+        ...user_profiles!inner(
+        name
+        )
+        `,
+      )
       if (error) {
         throw error;
       }
@@ -71,7 +73,11 @@ export default function Dashboard() {
       role="region"
       aria-label="Sales dashboard"
     >
-      <div className="chart-container" role="region" aria-label="Sales chart and data">
+      <div
+        className="chart-container"
+        role="region"
+        aria-label="Sales chart and data"
+      >
         <h3>Total Sales This Quarter ($)</h3>
         <div style={{ flex: 1, width: "100%", height: "300px" }}>
           <ResponsiveContainer>
@@ -88,7 +94,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        <Form metrics={metrics} />
+        <Form />
       </div>
     </div>
   );
