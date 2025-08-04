@@ -1,32 +1,45 @@
-import { useActionState } from 'react';
-import supabase from '../supabase-client';
+import { useActionState } from "react";
+import supabase from "../supabase-client";
+import { useAuth } from "../context/AuthContext";
+
+/**
+Challenge:
+* 1) Delete all of the records with the old, 'name' and 'value', format in the 
+     'sales_deals' table
+* 2) Add new deals with the new, 'user_id' and 'value', format by logging in and 
+     using the form. Verify the deals are being saved via your Supabase project
+* 3) Test that users with account type 'rep' can only add deals for their own 
+     name
+*/
 
 function Form({ metrics }) {
+  const { users } = useAuth();
+
   const [error, submitAction, isPending] = useActionState(
     async (previousState, formData) => {
-      
+      const submittedName = formData.get("name");
+      const user = users.find((u) => u.name === submittedName);
+
       const newDeal = {
-        name: formData.get('name'),
-        value: formData.get('value'),
+        user_id: user.id,
+        value: formData.get("value"),
       };
-      console.log(newDeal); 
-      
-      const {error} = await supabase.from("sales_deals").insert(newDeal);
-      if(error){
-        console.error("Error adding deal", error.message);
+      console.log("newDeal", newDeal);
+      const { error } = await supabase.from("sales_deals").insert(newDeal);
+      if (error) {
+        console.error("Error adding deal: ", error.message);
         return new Error("Failed to add deal");
       }
 
-
       return null;
     },
-    null 
+    null
   );
 
   const generateOptions = () => {
-    return metrics.map((metric) => (
-      <option key={metric.name} value={metric.name}>
-        {metric.name}
+    return users.map((user) => (
+      <option key={user.id} value={user.name}>
+        {user.name}
       </option>
     ));
   };
@@ -48,9 +61,9 @@ function Form({ metrics }) {
           <select
             id="deal-name"
             name="name"
-            defaultValue={metrics?.[0]?.name || ''}
+            defaultValue={metrics?.[0]?.name || ""}
             aria-required="true"
-            aria-invalid={error ? 'true' : 'false'}
+            aria-invalid={error ? "true" : "false"}
             disabled={isPending}
           >
             {generateOptions()}
@@ -68,28 +81,24 @@ function Form({ metrics }) {
             min="0"
             step="10"
             aria-required="true"
-            aria-invalid={error ? 'true' : 'false'}
+            aria-invalid={error ? "true" : "false"}
             aria-label="Deal amount in dollars"
             disabled={isPending}
           />
         </label>
 
-        <button
-          type="submit"
-          disabled={isPending}
-          aria-busy={isPending}
-        >
-          {isPending ? 'Adding...' : "Add Deal"}
+        <button type="submit" disabled={isPending} aria-busy={isPending}>
+          {isPending ? "Adding..." : "Add Deal"}
         </button>
       </form>
 
       {error && (
-        <div role='alert' className="error-message">
+        <div role="alert" className="error-message">
           {error.message}
         </div>
       )}
     </div>
   );
-};
+}
 
 export default Form;
