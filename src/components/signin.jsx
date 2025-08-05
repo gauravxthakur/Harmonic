@@ -21,9 +21,9 @@ const Signin = () => {
         return new Error(signInError);
       }
 
-      // Do not navigate here.
-      // A successful sign-in will trigger the onAuthStateChange listener in AuthContext.
-      // That will update the session state, and your router will handle the redirect automatically.
+      if(success){
+        navigate("/dashboard");
+      }
       return null;
     },
     null
