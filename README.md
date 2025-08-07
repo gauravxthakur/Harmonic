@@ -1,4 +1,4 @@
-## Harmonic
+# Harmonic
 ### Sales Dashboard Web App built with React and Supabase
 
 <img width="928" height="923" alt="Capture" src="https://github.com/user-attachments/assets/6b8ba4f6-f75d-4648-bcde-d68041fb902a" />
